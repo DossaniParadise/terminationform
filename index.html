@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termination Documentation Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 35px;
+            font-size: 28px;
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #444;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-left: 4px solid #667eea;
+            padding-left: 12px;
+        }
+
+        .reason-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .reason-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .reason-column-title {
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+            color: #667eea;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-top: 3px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .checkbox-item label {
+            font-weight: normal;
+            margin: 0;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            resize: none;
+            overflow: hidden;
+            min-height: 100px;
+            line-height: 1.6;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .signature-section {
+            margin-top: 40px;
+        }
+
+        .signature-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: end;
+        }
+
+        .signature-canvas-container {
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background-color: #fafafa;
+            cursor: crosshair;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .signature-canvas-container:hover {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .signature-canvas {
+            display: block;
+            width: 100%;
+            height: 100px;
+            touch-action: none;
+        }
+
+        .clear-signature {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .signature-canvas-container:hover .clear-signature {
+            opacity: 1;
+        }
+
+        .clear-signature:hover {
+            background-color: #c82333;
+        }
+
+        .button-container {
+            margin-top: 40px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 14px 35px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-clear {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background-color: #545b62;
+            transform: translateY(-2px);
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 20px;
+                border-radius: 0;
+            }
+
+            .button-container {
+                display: none;
+            }
+
+            textarea {
+                border: 1px solid #000;
+            }
+
+            .signature-canvas-container {
+                border: 1px solid #000;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .reason-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .signature-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Termination Documentation Form</h1>
+
+        <form id="terminationForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="employeeName">Employee Name:</label>
+                    <input type="text" id="employeeName" name="employeeName">
+                </div>
+                <div class="form-group">
+                    <label for="location">Location:</label>
+                    <input type="text" id="location" name="location">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="terminationDate">Termination Date:</label>
+                    <input type="date" id="terminationDate" name="terminationDate">
+                </div>
+                <div class="form-group">
+                    <label for="lastDayWorked">Last Day Worked (if different):</label>
+                    <input type="date" id="lastDayWorked" name="lastDayWorked">
+                </div>
+            </div>
+
+            <div class="form-row full">
+                <div class="form-group">
+                    <label for="supervisorName">Supervisor Name:</label>
+                    <input type="text" id="supervisorName" name="supervisorName">
+                </div>
+            </div>
+
+            <div class="section-title">Reason For Separation</div>
+
+            <div class="reason-container">
+                <!-- Column 1: General Voluntary -->
+                <div class="reason-column">
+                    <div class="reason-column-title">VOLUNTARY</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="neverStarted" name="reason" value="neverStarted">
+                        <label for="neverStarted">Never Started</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="anotherJob" name="reason" value="anotherJob">
+                        <label for="anotherJob">Another Job</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="relocation" name="reason" value="relocation">
+                        <label for="relocation">Relocation</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="illness" name="reason" value="illness">
+                        <label for="illness">Illness</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="pay" name="reason" value="pay">
+                        <label for="pay">Pay</label>
+                    </div>
+                </div>
+
+                <!-- Column 2: Voluntary Reasons -->
+                <div class="reason-column">
+                    <div class="reason-column-title">VOLUNTARY (cont.)</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="withoutNotice" name="reason" value="withoutNotice">
+                        <label for="withoutNotice">Without notice or reason</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="problemManagement" name="reason" value="problemManagement">
+                        <label for="problemManagement">Problem with Management</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="problemCoworker" name="reason" value="problemCoworker">
+                        <label for="problemCoworker">Problem with Co-worker</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="workingConditions" name="reason" value="workingConditions">
+                        <label for="workingConditions">Working Conditions</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="workSchedule" name="reason" value="workSchedule">
+                        <label for="workSchedule">Work Schedule</label>
+                    </div>
+                </div>
+
+                <!-- Column 3: Involuntary/Other -->
+                <div class="reason-column">
+                    <div class="reason-column-title">INVOLUNTARY / OTHER</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="noCallNoShow" name="reason" value="noCallNoShow">
+                        <label for="noCallNoShow">No Call / No Show</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="schoolCommitment" name="reason" value="schoolCommitment">
+                        <label for="schoolCommitment">School Commitment</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="retirement" name="reason" value="retirement">
+                        <label for="retirement">Retirement</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="refusedWork" name="reason" value="refusedWork">
+                        <label for="refusedWork">Refused Suitable Work</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="loaNoReturn" name="reason" value="loaNoReturn">
+                        <label for="loaNoReturn">LOA - Did not return</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="otherVol" name="reason" value="otherVol">
+                        <label for="otherVol">Other</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reason-container">
+                <!-- Involuntary reasons -->
+                <div class="reason-column">
+                    <div class="reason-column-title">INVOLUNTARY</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="lackOfWork" name="reason" value="lackOfWork">
+                        <label for="lackOfWork">Lack of Work</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="safetyViolation" name="reason" value="safetyViolation">
+                        <label for="safetyViolation">Safety Violation</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="insubordination" name="reason" value="insubordination">
+                        <label for="insubordination">Insubordination</label>
+                    </div>
+                </div>
+
+                <div class="reason-column">
+                    <div class="reason-column-title">INVOLUNTARY (cont.)</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="absenteeism" name="reason" value="absenteeism">
+                        <label for="absenteeism">Absenteeism/Tardiness</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="policyViolation" name="reason" value="policyViolation">
+                        <label for="policyViolation">Policy / Procedure Violation</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="customerComplaint" name="reason" value="customerComplaint">
+                        <label for="customerComplaint">Customer Complaint</label>
+                    </div>
+                </div>
+
+                <div class="reason-column">
+                    <div class="reason-column-title">INVOLUNTARY (cont.)</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="jobEliminated" name="reason" value="jobEliminated">
+                        <label for="jobEliminated">Job Eliminated or Changed</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="unsatisfactoryPerf" name="reason" value="unsatisfactoryPerf">
+                        <label for="unsatisfactoryPerf">Unsatisfactory Performance</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cashViolation" name="reason" value="cashViolation">
+                        <label for="cashViolation">Cash Violation / Theft</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="otherInvol" name="reason" value="otherInvol">
+                        <label for="otherInvol">Other</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row full">
+                <div class="form-group">
+                    <label for="detailedReason">Explain the reason given above in detail. Note if there are prior progressive counselings pertaining to the Termination:</label>
+                    <textarea id="detailedReason" name="detailedReason" class="textarea-expanding" placeholder="Enter detailed explanation..."></textarea>
+                </div>
+            </div>
+
+            <div class="signature-section">
+                <div class="signature-row">
+                    <div class="form-group">
+                        <label>Employee Signature:</label>
+                        <div class="signature-canvas-container">
+                            <canvas id="empSignature" class="signature-canvas" width="500" height="100"></canvas>
+                            <button type="button" class="clear-signature" onclick="clearSignature('empSignature')">Clear</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="empSigDate">Date:</label>
+                        <input type="date" id="empSigDate" name="empSigDate">
+                    </div>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label for="employeeComments">Employee Comments:</label>
+                        <textarea id="employeeComments" name="employeeComments" class="textarea-expanding" placeholder="Employee may add comments here..."></textarea>
+                    </div>
+                </div>
+
+                <div class="signature-row">
+                    <div class="form-group">
+                        <label>Supervisor Signature:</label>
+                        <div class="signature-canvas-container">
+                            <canvas id="supSignature" class="signature-canvas" width="500" height="100"></canvas>
+                            <button type="button" class="clear-signature" onclick="clearSignature('supSignature')">Clear</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="supSigDate">Date:</label>
+                        <input type="date" id="supSigDate" name="supSigDate">
+                    </div>
+                </div>
+
+                <div class="signature-row">
+                    <div class="form-group">
+                        <label>Witness / HR (Optional):</label>
+                        <div class="signature-canvas-container">
+                            <canvas id="witnessSignature" class="signature-canvas" width="500" height="100"></canvas>
+                            <button type="button" class="clear-signature" onclick="clearSignature('witnessSignature')">Clear</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="witnessSigDate">Date:</label>
+                        <input type="date" id="witnessSigDate" name="witnessSigDate">
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button type="button" class="btn-print" onclick="window.print()">Print / Save as PDF</button>
+                <button type="button" class="btn-clear" onclick="clearForm()">Clear Form</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // ==================== SIGNATURE PAD FUNCTIONALITY ====================
+        const signaturePads = {};
+
+        function initSignaturePad(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * 2;
+            canvas.height = rect.height * 2;
+            ctx.scale(2, 2);
+
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            function getCoordinates(e) {
+                const rect = canvas.getBoundingClientRect();
+                if (e.touches && e.touches[0]) {
+                    return {
+                        x: e.touches[0].clientX - rect.left,
+                        y: e.touches[0].clientY - rect.top
+                    };
+                }
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+
+            function startDrawing(e) {
+                e.preventDefault();
+                isDrawing = true;
+                const coords = getCoordinates(e);
+                lastX = coords.x;
+                lastY = coords.y;
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+
+                const coords = getCoordinates(e);
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(coords.x, coords.y);
+                ctx.stroke();
+
+                lastX = coords.x;
+                lastY = coords.y;
+
+                saveSignature(canvasId);
+            }
+
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            canvas.addEventListener('touchstart', startDrawing);
+            canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchend', stopDrawing);
+
+            signaturePads[canvasId] = { canvas, ctx };
+        }
+
+        function clearSignature(canvasId) {
+            const pad = signaturePads[canvasId];
+            if (pad) {
+                pad.ctx.clearRect(0, 0, pad.canvas.width, pad.canvas.height);
+                localStorage.removeItem(`signature_term_${canvasId}`);
+            }
+        }
+
+        function saveSignature(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const dataUrl = canvas.toDataURL();
+            localStorage.setItem(`signature_term_${canvasId}`, dataUrl);
+        }
+
+        function loadSignature(canvasId) {
+            const dataUrl = localStorage.getItem(`signature_term_${canvasId}`);
+            if (dataUrl) {
+                const canvas = document.getElementById(canvasId);
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = dataUrl;
+            }
+        }
+
+        window.addEventListener('load', function() {
+            initSignaturePad('empSignature');
+            initSignaturePad('supSignature');
+            initSignaturePad('witnessSignature');
+
+            loadSignature('empSignature');
+            loadSignature('supSignature');
+            loadSignature('witnessSignature');
+        });
+
+        // ==================== AUTO-EXPAND TEXTAREAS ====================
+        function autoExpand(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        document.querySelectorAll('textarea').forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                autoExpand(this);
+            });
+            autoExpand(textarea);
+        });
+
+        // ==================== CLEAR FORM ====================
+        function clearForm() {
+            if (confirm('Are you sure you want to clear all form data and signatures?')) {
+                document.getElementById('terminationForm').reset();
+                
+                clearSignature('empSignature');
+                clearSignature('supSignature');
+                clearSignature('witnessSignature');
+                
+                document.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.style.height = 'auto';
+                    autoExpand(textarea);
+                });
+
+                localStorage.removeItem('terminationFormData');
+            }
+        }
+
+        // ==================== SAVE/LOAD FORM DATA ====================
+        document.getElementById('terminationForm').addEventListener('input', function() {
+            const formData = new FormData(this);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (data[key]) {
+                    if (Array.isArray(data[key])) {
+                        data[key].push(value);
+                    } else {
+                        data[key] = [data[key], value];
+                    }
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            localStorage.setItem('terminationFormData', JSON.stringify(data));
+        });
+
+        window.addEventListener('load', function() {
+            const savedData = localStorage.getItem('terminationFormData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                
+                for (let key in data) {
+                    const elements = document.getElementsByName(key);
+                    elements.forEach(element => {
+                        if (element.type === 'checkbox') {
+                            const values = Array.isArray(data[key]) ? data[key] : [data[key]];
+                            element.checked = values.includes(element.value);
+                        } else {
+                            element.value = data[key];
+                        }
+                    });
+                }
+                
+                document.querySelectorAll('textarea').forEach(autoExpand);
+            }
+        });
+    </script>
+</body>
+</html>
