@@ -152,6 +152,10 @@
             border-color: #667eea;
         }
 
+        .print-text {
+            display: none;
+        }
+
         .signature-section {
             margin-top: 40px;
             /* Ensure minimum space for signatures on screen */
@@ -418,8 +422,16 @@
             }
 
             textarea {
+                display: none;
+            }
+
+            .print-text {
+                display: block;
+                white-space: pre-wrap;
+                word-break: break-word;
                 border: 1px solid #000;
-                overflow: visible;
+                padding: 12px;
+                min-height: 80px;
             }
 
             .signature-display-box {
@@ -733,6 +745,7 @@
                 <div class="form-group">
                     <label for="detailedReason">Explain the reason given above in detail. Note if there are prior progressive counselings pertaining to the Termination:</label>
                     <textarea id="detailedReason" name="detailedReason" class="textarea-expanding" placeholder="Enter detailed explanation..."></textarea>
+                    <div class="print-text" data-for="detailedReason"></div>
                 </div>
             </div>
 
@@ -756,6 +769,7 @@
                     <div class="form-group">
                         <label for="employeeComments">Employee Comments:</label>
                         <textarea id="employeeComments" name="employeeComments" class="textarea-expanding" placeholder="Employee may add comments here..."></textarea>
+                        <div class="print-text" data-for="employeeComments"></div>
                     </div>
                 </div>
 
@@ -791,7 +805,7 @@
             </div>
 
             <div class="button-container">
-                <button type="button" class="btn-print" onclick="window.print()">Print / Save as PDF</button>
+                <button type="button" class="btn-print" onclick="printForm()">Print / Save as PDF</button>
                 <button type="button" class="btn-clear" onclick="clearForm()">Clear Form</button>
             </div>
         </form>
@@ -1035,6 +1049,23 @@
             });
             autoExpand(textarea);
         });
+
+        function syncPrintText() {
+            document.querySelectorAll('.print-text[data-for]').forEach(printBlock => {
+                const textareaId = printBlock.dataset.for;
+                const textarea = document.getElementById(textareaId);
+                if (textarea) {
+                    printBlock.textContent = textarea.value;
+                }
+            });
+        }
+
+        function printForm() {
+            syncPrintText();
+            window.print();
+        }
+
+        window.addEventListener('beforeprint', syncPrintText);
 
         // ==================== CLEAR FORM ====================
         function clearForm() {
