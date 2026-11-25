@@ -567,13 +567,17 @@
                 width: 100%;
             }
         }
+
+        .button-container { flex-wrap: wrap; }
+        .send-note { text-align: center; font-size: 13px; color: #666; margin-top: 14px; }
+        @media print { .send-note { display: none; } }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Termination Documentation Form</h1>
 
-        <form id="terminationForm">
+        <form id="terminationForm" autocomplete="off">
             <div class="form-row">
                 <div class="form-group">
                     <label for="employeeName">Employee Name:</label>
@@ -805,9 +809,11 @@
             </div>
 
             <div class="button-container">
-                <button type="button" class="btn-print" onclick="printForm()">Print / Save as PDF</button>
+                <button type="button" class="btn-print" onclick="printForm()">1. Save as PDF</button>
+                <button type="button" class="btn-print" onclick="emailHR()">2. Email to HR</button>
                 <button type="button" class="btn-clear" onclick="clearForm()">Clear Form</button>
             </div>
+            <p class="send-note">Save the signed form as a PDF first, then attach it to the email draft. The draft cannot attach it for you. Nothing you type here is stored on this device.</p>
         </form>
     </div>
 
@@ -837,6 +843,7 @@
         let lastY = 0;
         let modalCanvas = null;
         let modalCtx = null;
+        const signatures = {}; // in-memory only; gone when the page closes
 
         // Initialize modal canvas when page loads
         window.addEventListener('load', function() {
@@ -848,9 +855,6 @@
             modalCtx.lineWidth = 3;
             modalCtx.lineCap = 'round';
             modalCtx.lineJoin = 'round';
-
-            // Load saved signatures
-            loadAllSignatures();
         });
 
         // Open signature modal
@@ -870,7 +874,7 @@
             clearModalCanvas();
             
             // Load existing signature if any
-            const savedSignature = localStorage.getItem(`signature_term_${signatureId}`);
+            const savedSignature = signatures[signatureId];
             if (savedSignature) {
                 const img = new Image();
                 img.onload = function() {
@@ -989,8 +993,8 @@
                 return;
             }
 
-            // Save to localStorage
-            localStorage.setItem(`signature_term_${currentSignatureId}`, dataUrl);
+            // Keep in memory only (never written to the device)
+            signatures[currentSignatureId] = dataUrl;
             
             // Update the display box
             updateSignatureDisplay(currentSignatureId, dataUrl);
@@ -1022,19 +1026,7 @@
                 placeholder.style.display = 'block';
             }
             
-            localStorage.removeItem(`signature_term_${signatureId}`);
-        }
-
-        // Load all signatures from localStorage
-        function loadAllSignatures() {
-            const signatureIds = ['empSignature', 'supSignature', 'witnessSignature'];
-            
-            signatureIds.forEach(signatureId => {
-                const dataUrl = localStorage.getItem(`signature_term_${signatureId}`);
-                if (dataUrl) {
-                    updateSignatureDisplay(signatureId, dataUrl);
-                }
-            });
+            delete signatures[signatureId];
         }
 
         // ==================== AUTO-EXPAND TEXTAREAS ====================
@@ -1060,11 +1052,6 @@
             });
         }
 
-        function printForm() {
-            syncPrintText();
-            window.print();
-        }
-
         window.addEventListener('beforeprint', syncPrintText);
 
         // ==================== CLEAR FORM ====================
@@ -1081,51 +1068,122 @@
                     textarea.style.height = 'auto';
                     autoExpand(textarea);
                 });
-
-                localStorage.removeItem('terminationFormData');
             }
         }
 
-        // ==================== SAVE/LOAD FORM DATA ====================
-        document.getElementById('terminationForm').addEventListener('input', function() {
-            const formData = new FormData(this);
-            const data = {};
-            
-            for (let [key, value] of formData.entries()) {
-                if (data[key]) {
-                    if (Array.isArray(data[key])) {
-                        data[key].push(value);
-                    } else {
-                        data[key] = [data[key], value];
-                    }
-                } else {
-                    data[key] = value;
-                }
-            }
-            
-            localStorage.setItem('terminationFormData', JSON.stringify(data));
-        });
+        // ==================== PRIVACY: ALWAYS START BLANK ====================
+        const FORM_TITLE = 'Termination Documentation Form';
+        const HR_EMAIL = 'hr@dossaniparadise.com';
 
-        window.addEventListener('load', function() {
-            const savedData = localStorage.getItem('terminationFormData');
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                
-                for (let key in data) {
-                    const elements = document.getElementsByName(key);
-                    elements.forEach(element => {
-                        if (element.type === 'checkbox') {
-                            const values = Array.isArray(data[key]) ? data[key] : [data[key]];
-                            element.checked = values.includes(element.value);
-                        } else {
-                            element.value = data[key];
-                        }
-                    });
+        function resetFormSilently() {
+            document.querySelector('form').reset();
+            document.querySelectorAll('img[id$="-img"]').forEach(img => {
+                clearSignatureDisplay(img.id.replace(/-img$/, ''));
+            });
+            document.querySelectorAll('.print-text').forEach(el => { el.textContent = ''; });
+            document.querySelectorAll('textarea').forEach(autoExpand);
+            pdfSaved = false;
+        }
+
+        // Remove anything an older version of this form left on the device
+        try {
+            Object.keys(localStorage).forEach(key => {
+                if (key === 'terminationFormData' || key.indexOf('signature_term_') === 0) {
+                    localStorage.removeItem(key);
                 }
-                
-                document.querySelectorAll('textarea').forEach(autoExpand);
+            });
+        } catch (e) {}
+
+        // Every open, reload or back-navigation gives a blank form
+        window.addEventListener('pageshow', resetFormSilently);
+
+        // ==================== SAVE PDF + EMAIL TO HR ====================
+        let pdfSaved = false;
+
+        function printForm() {
+            syncPrintText();
+            pdfSaved = true;
+            window.print();
+        }
+
+        function fieldLabel(el) {
+            const label = document.querySelector('label[for="' + el.id + '"]');
+            const text = label ? label.textContent : (el.name || el.id);
+            return text.trim().replace(/:$/, '');
+        }
+
+        function buildEmailBody(textLimit) {
+            const groupTitles = { reason: 'Reason(s)', violation: 'Counseling for', action: 'Action taken' };
+            const groups = {};
+            const lines = [FORM_TITLE, '', 'The signed PDF of this form is attached.', ''];
+
+            document.querySelectorAll('form input, form textarea').forEach(el => {
+                if (/SigDate$/.test(el.id) || el.id === 'suspensionDays') return;
+                if (el.type === 'checkbox') {
+                    if (!groups[el.name]) {
+                        groups[el.name] = [];
+                        lines.push({ group: el.name });
+                    }
+                    if (el.checked) {
+                        let text = fieldLabel(el);
+                        if (el.id === 'suspension') {
+                            const days = document.getElementById('suspensionDays').value;
+                            if (days) text += ' (' + days + ' day(s))';
+                        }
+                        groups[el.name].push(text);
+                    }
+                    return;
+                }
+                let value = el.value.trim();
+                if (el.type === 'datetime-local') value = value.replace('T', ' ');
+                if (el.tagName === 'TEXTAREA') {
+                    if (!value) return;
+                    if (textLimit === 0) {
+                        value = '[see attached PDF]';
+                    } else if (value.length > textLimit) {
+                        value = value.slice(0, textLimit) + '... [continues in attached PDF]';
+                    }
+                    lines.push('', fieldLabel(el) + ':', value, '');
+                    return;
+                }
+                lines.push(fieldLabel(el) + ': ' + (value || '-'));
+            });
+
+            lines.push('');
+            document.querySelectorAll('img[id$="-img"]').forEach(img => {
+                const id = img.id.replace(/-img$/, '');
+                const who = img.closest('.form-group').querySelector('label').textContent.trim().replace(/:$/, '');
+                const dateEl = document.getElementById(id.replace('Signature', '') + 'SigDate');
+                const date = dateEl && dateEl.value ? ', dated ' + dateEl.value : '';
+                lines.push(who + ': ' + (signatures[id] ? 'signed' + date : 'not signed'));
+            });
+
+            return lines.map(line => {
+                if (typeof line === 'string') return line;
+                const picked = groups[line.group];
+                return (groupTitles[line.group] || line.group) + ': ' + (picked.length ? picked.join('; ') : '-');
+            }).join('\r\n').replace(/(\r\n){3,}/g, '\r\n\r\n');
+        }
+
+        function emailHR() {
+            const name = document.getElementById('employeeName').value.trim();
+            if (!name) {
+                alert('Please enter the employee name before emailing HR.');
+                return;
             }
-        });
+            if (!pdfSaved && !confirm('You have not saved the PDF yet. HR needs the signed PDF attached to the email.\n\nPress OK to draft the email anyway, or Cancel to go back and save the PDF first.')) {
+                return;
+            }
+            const subject = FORM_TITLE + ' - ' + name;
+            let url = '';
+            // Mail apps cut off long links, so shorten the long answers until the draft fits
+            for (const limit of [1200, 600, 300, 120, 0]) {
+                url = 'mailto:' + HR_EMAIL + '?subject=' + encodeURIComponent(subject) +
+                      '&body=' + encodeURIComponent(buildEmailBody(limit));
+                if (url.length <= 1900) break;
+            }
+            window.location.href = url;
+        }
 
         // Close modal when clicking outside
         document.getElementById('signatureModal').addEventListener('click', function(e) {
